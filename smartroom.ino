@@ -96,6 +96,7 @@ String months[12] = {"January", "February", "March", "April", "May", "June", "Ju
 /*************************************************************************************************************************************/
 // FunctionDeclare
 void wifiSetup();
+bool connectToWiFiNetwork(const char* ssid, const char* password);
 void connectToWiFi();
 void httpPostToThinkSpeak();
 void sendDataToBlynk();
@@ -237,34 +238,30 @@ void wifiSetup()
   Serial.print("\r\nWiFi connected");
 }
 
-void connectToWiFi() {
-  Serial.println("Connecting to WiFi...");
-
-  WiFi.begin(ssid1, password1); // Thử kết nối với mạng Wi-Fi 1
-
+bool connectToWiFiNetwork(const char* ssid, const char* password) {
+  WiFi.begin(ssid, password);
   unsigned long startTime = millis();
   while (WiFi.status() != WL_CONNECTED && millis() - startTime < 10000) {
     delay(500);
     Serial.print(".");
   }
+  return WiFi.status() == WL_CONNECTED;
+}
 
-  if (WiFi.status() == WL_CONNECTED) {
+void connectToWiFi() {
+  Serial.println("Connecting to WiFi...");
+
+  if (connectToWiFiNetwork(ssid1, password1)) {
     Serial.println("Connected to WiFi 1");
+    return;
+  }
+
+  Serial.println("Failed to connect to WiFi 1. Trying WiFi 2...");
+
+  if (connectToWiFiNetwork(ssid2, password2)) {
+    Serial.println("Connected to WiFi 2");
   } else {
-    Serial.println("Failed to connect to WiFi 1. Trying WiFi 2...");
-    WiFi.begin(ssid2, password2); // Thử kết nối với mạng Wi-Fi 2
-
-    startTime = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - startTime < 10000) {
-      delay(500);
-      Serial.print(".");
-    }
-
-    if (WiFi.status() == WL_CONNECTED) {
-      Serial.println("Connected to WiFi 2");
-    } else {
-      Serial.println("Failed to connect to both WiFi networks");
-    }
+    Serial.println("Failed to connect to both WiFi networks");
   }
 }
 
